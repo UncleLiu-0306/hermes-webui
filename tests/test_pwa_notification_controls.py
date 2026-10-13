@@ -454,11 +454,11 @@ def test_completion_notification_fires_when_tab_was_hidden_during_stream():
 def test_desktop_background_notification_signal_stays_out_of_stream_visibility():
     stream_tracker = _source_between(
         "const LIVE_STREAMS={};",
-        "function closeLiveStream(sessionId, streamId, source){",
+        "function closeLiveStream(",
     )
     deferred_recovery = _source_between(
         "function _reattachOrRestoreAfterDeferredStreamError(source){",
-        "  // Bug A fix (#631):",
+        "function _deferStreamErrorIfPageHidden(source){",
     )
 
     for name in DESKTOP_BACKGROUND_NOTIFICATION_NAMES:

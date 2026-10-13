@@ -456,7 +456,8 @@ def test_replayed_long_task_events_enter_the_same_live_timeline_handlers():
         MESSAGES_SRC.index("function _updateLiveThinkingCard") :
         MESSAGES_SRC.index("// Split a content string", MESSAGES_SRC.index("function _updateLiveThinkingCard"))
     ]
-    assert "_updateLiveThinkingCard(" in wire_block, "reasoning replay should use the live Thinking card path"
+    assert "_scheduleRender();" in wire_block, "reasoning replay should use the shared render scheduler"
+    assert "_updateLiveThinkingCard(text," in thinking_helper, "deferred reasoning should use the live Thinking card path"
     assert "updateThinking(text, opts)" in thinking_helper and "appendThinking(text, opts)" in thinking_helper, (
         "the shared Thinking helper should still route replay/live reasoning into the Worklog Thinking card path"
     )

@@ -777,6 +777,7 @@ let _assistantSegmentSeq=3;
 let _currentActivityBurstId=4;
 let renderCount=0;
 function _renderAnchorLiveScene(){{ renderCount+=1; return true; }}
+function _flushPendingReasoningRender(){{}}
 {apply_source}
 const renderOutcome={{}};
 const result=_applyToAnchor(
@@ -1471,14 +1472,14 @@ def test_slice6_live_shadow_feed_wires_anchor_scene_for_visible_order_handoff():
     assert "_upsertAnchorProcessProse(displayText" in src
     reasoning_body = _event_listener_body(src, "reasoning")
     assert "_applyToAnchor" not in reasoning_body
-    assert "const liveThinkingText=_liveThinkingText();" in reasoning_body
-    assert "const anchorReasoningFallback={};" in reasoning_body
-    assert "if(!_upsertAnchorReasoning(liveThinkingText, anchorReasoningFallback))" in reasoning_body
-    assert "_updateLiveThinkingCard(liveThinkingText,{" in reasoning_body
-    assert "...anchorReasoningFallback" in reasoning_body
-    assert "anchorRenderFallback:true" in reasoning_body
-    assert "sessionId:activeSid" in reasoning_body
-    assert "streamId" in reasoning_body
+    assert "_scheduleRender();" in reasoning_body
+    reasoning_render_body = _function_body(src, "_flushPendingReasoningRender")
+    assert "if(!_upsertAnchorReasoning(text, opts)&&!opts.deferRender)" in reasoning_render_body
+    assert "_updateLiveThinkingCard(text,{" in reasoning_render_body
+    assert "...opts" in reasoning_render_body
+    assert "anchorRenderFallback:true" in reasoning_render_body
+    assert "sessionId:activeSid" in reasoning_render_body
+    assert "streamId" in reasoning_render_body
     assert "function _flushReasoningToAnchor()" in src
     assert "_upsertAnchorReasoning(reasoningText" in src
     assert "`live-reasoning:${streamId}:final`" in src

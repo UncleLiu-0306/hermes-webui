@@ -678,29 +678,27 @@ class TestToolCallGroupingStatic:
         )
         assert reasoning_match, "reasoning listener not found"
         reasoning_fn = reasoning_match.group(1)
+        reasoning_render_fn = _function_body(MESSAGES_JS, "_flushPendingReasoningRender")
         render_live_thinking_fn = _function_body(MESSAGES_JS, "_renderLiveThinking")
 
-        assert reasoning_fn.count("_liveThinkingText()") == 1, (
-            "_liveThinkingText() should be computed once inside the active-session branch."
+        assert "_scheduleRender();" in reasoning_fn, (
+            "Reasoning SSE updates should enter the shared render scheduler."
         )
-        assert "const liveThinkingText=_liveThinkingText();" in reasoning_fn, (
-            "Reasoning SSE updates should cache the live thinking text before routing."
-        )
-        primary_call = "_upsertAnchorReasoning(liveThinkingText, anchorReasoningFallback)"
-        assert primary_call in reasoning_fn, (
+        primary_call = "_upsertAnchorReasoning(text, opts)"
+        assert primary_call in reasoning_render_fn, (
             "Anchor reasoning must remain the primary renderer path."
         )
-        fallback_call = "_updateLiveThinkingCard(liveThinkingText,{"
-        assert reasoning_fn.index(primary_call) < reasoning_fn.index(fallback_call), (
+        fallback_call = "_updateLiveThinkingCard(text,{"
+        assert reasoning_render_fn.index(primary_call) < reasoning_render_fn.index(fallback_call), (
             "The legacy thinking card should only run after anchor upsert fails."
         )
-        assert "if(!_upsertAnchorReasoning(liveThinkingText, anchorReasoningFallback)){" in reasoning_fn, (
-            "The legacy thinking card should be a falsy-anchor fallback."
+        assert "if(!_upsertAnchorReasoning(text, opts)&&!opts.deferRender){" in reasoning_render_fn, (
+            "The legacy thinking card should be a visible falsy-anchor fallback."
         )
-        assert reasoning_fn.count(fallback_call) == 1, (
+        assert reasoning_render_fn.count(fallback_call) == 1, (
             "Reasoning SSE updates should call the live thinking card only in fallback."
         )
-        assert "...anchorReasoningFallback" in reasoning_fn, (
+        assert "...opts" in reasoning_render_fn, (
             "The fallback renderer must receive the exact Anchor reasoning identity."
         )
         assert "_updateLiveThinkingCard(" in render_live_thinking_fn, (
